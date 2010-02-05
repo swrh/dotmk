@@ -11,7 +11,7 @@ build()
 # ${mkfile}
 #
 EOF
-	sed -e 's/^/# /' LICENSE
+	sed -e 's/^/# /' "${TOPDIR}/LICENSE"
 	cat << EOF
 
 ifndef ${mkfile}
@@ -36,12 +36,12 @@ cleandir()
 	dir="${1}"
 
 	find "${dir}" -mindepth 1 -maxdepth 1 -and ! -name .gitignore -print0 | xargs -0 rm -fr
+	mkdir -p "${MKDIR}"
 }
 
 MKDIR="mk"
-SRCDIR="src"
-
-cd "`dirname "${0}"`"
+TOPDIR="`dirname "${0}"`"
+SRCDIR="${TOPDIR}/src"
 
 cleandir "${MKDIR}"
 
