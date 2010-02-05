@@ -41,6 +41,8 @@ cleandir()
 MKDIR="mk"
 SRCDIR="src"
 
+cd "`dirname "${0}"`"
+
 cleandir "${MKDIR}"
 
 build build.mk

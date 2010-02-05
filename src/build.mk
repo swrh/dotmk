@@ -1,41 +1,45 @@
 ifdef DEBUG
 	ifeq ($(DEBUG),)
-		mk_DEBUG=n
+		dotmk_DEBUG=n
 	else ifeq ($(DEBUG),n)
-		mk_DEBUG=n
+		dotmk_DEBUG=n
 	else ifeq ($(DEBUG),no)
-		mk_DEBUG=n
+		dotmk_DEBUG=n
 	else ifeq ($(DEBUG),N)
-		mk_DEBUG=n
+		dotmk_DEBUG=n
 	else ifeq ($(DEBUG),NO)
-		mk_DEBUG=n
+		dotmk_DEBUG=n
 	else
-		mk_DEBUG=y
+		dotmk_DEBUG=y
 	endif
 else
-	mk_DEBUG=n
+	dotmk_DEBUG=n
 endif
 
 # C compiler.
-CFLAGS+=		-std=gnu99 -Wall -Werror -Wunused -fPIC -DPIC
-CFLAGS+=		-Wshadow
-ifeq ($(mk_DEBUG),y)
+CFLAGS+=		-Wall -Wunused -fPIC -DPIC
+ifeq ($(STRICTFLAGS),y)
+CFLAGS+=		-std=gnu99 -Werror -Wshadow
+endif
+ifeq ($(dotmk_DEBUG),y)
 CFLAGS+=		-O0 -ggdb3 -DDEBUG
 else
 CFLAGS+=		-O2 -DNDEBUG
 endif
 
 # C++ compiler.
-CXXFLAGS+=		-Wall -Werror -Wunused -fPIC -DPIC
-CXXFLAGS+=		-Wshadow
-ifeq ($(mk_DEBUG),y)
+CXXFLAGS+=		-Wall -Wunused -fPIC -DPIC
+ifeq ($(STRICTFLAGS),y)
+CXXFLAGS+=		-Werror -Wshadow
+endif
+ifeq ($(dotmk_DEBUG),y)
 CXXFLAGS+=		-O0 -ggdb3 -DDEBUG
 else
 CXXFLAGS+=		-O2 -DNDEBUG
 endif
 
 # Linker.
-ifeq ($(mk_DEBUG),y)
+ifeq ($(dotmk_DEBUG),y)
 LDFLAGS+=		
 else
 LDFLAGS+=		
@@ -87,15 +91,19 @@ no not empty null:
 ifdef LIB
 LIBS+=			$(LIB)
 $(LIB)_SRCS+=		$(SRCS)
-$(LIB)_DEPLIBS+=	$(DEPLIBS)
+# It isn't needed to set the individual variable, as the global will be used
+# later anyway.
+#$(LIB)_DEPLIBS+=	$(DEPLIBS)
 endif
 
 ifdef PROG
 PROGS+=			$(PROG)
 $(PROG)_SRCS+=		$(SRCS)
-$(PROG)_INCDIRS+=	$(INCDIRS)
-$(PROG)_LIBDIRS+=	$(LIBDIRS)
-$(PROG)_DEPLIBS+=	$(DEPLIBS)
+# It isn't needed to set the individual variables, as the globals will be used
+# later anyway.
+#$(PROG)_INCDIRS+=	$(INCDIRS)
+#$(PROG)_LIBDIRS+=	$(LIBDIRS)
+#$(PROG)_DEPLIBS+=	$(DEPLIBS)
 endif
 
 
@@ -156,16 +164,15 @@ endef
 
 $$(foreach src,$$($(1)_SRCS),$$(eval $$(call BIN_SRC_template,$$(src))))
 
-define BIN_INCDIR_template
-MKDEPARGS+=		-I$$(1) # mkdep
-CTAGSARGS+=		$$(1) # ctags
-endef
-
-$$(foreach incdir,$$($(1)_INCDIRS),$$(eval $$(call BIN_INCDIR_template,$$(incdir))))
+MKDEPARGS+=		$$($(1)_INCDIRS:%=-I%)
+CTAGSARGS+=		$$($(1)_INCDIRS)
 
 endef
 
 $(foreach bin,$(LIBS) $(PROGS),$(eval $(call BIN_template,$(bin))))
+
+MKDEPARGS+=		$(INCDIRS:%=-I%)
+CTAGSARGS+=		$(INCDIRS)
 
 
 # libraries
