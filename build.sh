@@ -39,6 +39,48 @@ cleandir()
 	mkdir -p "${MKDIR}"
 }
 
+automakefile()
+{
+	makefile="Makefile"
+	prog="`basename "${PWD}"`"
+
+	exec 9>&1
+	exec 1>"${makefile}"
+
+	cat << EOF
+# ${makefile}
+
+PROGS=	${prog}
+${prog}_SRCS=	\\
+EOF
+
+	tmpfile="`mktemp "/tmp/${0##*/}-$$.XXXXXX"`"
+	find . -name '*.c' -or -iname '*.cpp' -or -iname '*.cxx' -or -iname '*.c++' > "${tmpfile}"
+	head -n -1 < "${tmpfile}" | sed -e 's/^/\t/;s/$/ \\/'
+	tail -n 1 < "${tmpfile}" | sed -e 's/^/\t/'
+
+	for incdir in ./include; do
+		[ -d "${incdir}" ] || continue
+		echo "		${incdir} \\"
+	done > "${tmpfile}"
+
+	if [ -s "${tmpfile}" ]; then
+		echo "${prog}_INCDIRS=	\\"
+		head -n -1 < "${tmpfile}" | sed -e 's/^/\t/;s/$/ \\/'
+		tail -n 1 < "${tmpfile}" | sed -e 's/^/\t/'
+	fi
+
+	cat << EOF
+
+include ${MKDIR}/build.mk
+EOF
+	exec 1>&9-
+
+	rm -f "${tmpfile}"
+
+	cat "${makefile}"
+}
+
 MKDIR="mk"
 TOPDIR="`dirname "${0}"`"
 SRCDIR="${TOPDIR}/src"
@@ -47,3 +89,5 @@ cleandir "${MKDIR}"
 
 build build.mk
 build subdir.mk
+
+[ -f Makefile ] || automakefile
