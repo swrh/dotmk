@@ -51,6 +51,7 @@ automakefile()
 # ${makefile}
 
 PROGS=	${prog}
+
 ${prog}_SRCS=	\\
 EOF
 
@@ -61,10 +62,11 @@ EOF
 
 	for incdir in ./include; do
 		[ -d "${incdir}" ] || continue
-		echo "		${incdir} \\"
+		echo "${incdir}"
 	done > "${tmpfile}"
 
 	if [ -s "${tmpfile}" ]; then
+		echo
 		echo "${prog}_INCDIRS=	\\"
 		head -n -1 < "${tmpfile}" | sed -e 's/^/\t/;s/$/ \\/'
 		tail -n 1 < "${tmpfile}" | sed -e 's/^/\t/'
