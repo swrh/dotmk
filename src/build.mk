@@ -195,7 +195,6 @@ lib$(1).so: $$($(1)_OBJS)
 $(1): lib$(1).a lib$(1).so
 
 CLEAN_TARGETS+=		$(1)_clean
-DISTCLEAN_TARGETS+=	$(1)_clean
 $(1)_clean:
 	$(RM) lib$(1).a lib$(1).so $$($(1)_OBJS)
 endef
@@ -215,7 +214,6 @@ $(1): $$($(1)_OBJS)
 	$$($(1)_LINK) $$^ $$($(1)_LIBDIRS:%=-L%) $$($(1)_DEPLIBS:%=-l%) $$(LIBDIRS:%=-L%) $$(DEPLIBS:%=-l%) $$($(1)_LDFLAGS) $$(LDLIBS) -o $$@
 
 CLEAN_TARGETS+=	$(1)_clean
-DISTCLEAN_TARGETS+=	$(1)_clean
 $(1)_clean:
 	$(RM) $(1) $$($(1)_OBJS)
 endef
@@ -235,6 +233,11 @@ MKDEPARGS+=		$(CXX_SRCS) $(C_SRCS)
 .PHONY: dep
 dep:
 	$(MKDEP) $(MKDEPARGS)
+
+DISTCLEAN_TARGETS+=	$(CLEAN_TARGETS) dep_distclean
+.PHONY: dep_distclean
+dep_distclean:
+	$(RM) .depend
 
 .PHONY: tags
 tags:
