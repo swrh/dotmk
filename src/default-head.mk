@@ -11,3 +11,8 @@ ifndef DOTMKDIR
 	endif
 
 endif
+
+# Avoid unwanted default goals.
+.PHONY: all
+.DEFAULT_GOAL:=		all
+all:

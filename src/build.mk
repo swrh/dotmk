@@ -69,12 +69,6 @@ WGET=			wget
 
 LINK.o=			$(CC)
 
-# Avoid unwanted default goals. The `all' goal must be redefined at the end of
-# this file.
-.PHONY: all
-.DEFAULT_GOAL:=		all
-all:
-
 # Empty goals.
 .PHONY: no not empty null
 no not empty null:
