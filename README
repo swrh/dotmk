@@ -1,0 +1,155 @@
+INTRODUCTION
+============
+
+The "dotmk" project is composed by a set of GNU make scripts that are able to
+simplify drastically the Makefile creation process. If your project needs to
+use GNU make to compile its software, "dotmk" can simplify all the complicated
+process of rules definitions and compiler commands creation. This task
+sometimes takes lots of time to understand, define and debug, but "dotmk" does
+it just by setting a couple of variables and a "include" line.
+
+For now "dotmk" is only able to handle two basic tasks: C/C++ software building
+(compilation and linking) and recursive calling GNU make in subdirectories. We
+intent to implement other objectives like Doxygen extraction, LaTeX documents
+compilation or Java support but this will come over the time. The instructions
+to install "dotmk" in your project and execute each task follows.
+
+
+INSTALL
+=======
+
+The installation process consists in the building of GNU make scripts under a
+directory called "mk" in the project which will use "dotmk". The result will be
+just that the project will contain that "mk" directory with some ".mk" files in
+it.
+
+To do that, unpack the "dotmk" package and call its "install.sh" script with a
+target directory as its argument:
+
+  $ tar -xzf dotmk-0.2.tar.gz
+  $ cd dotmk
+  $ ./install.sh ~/my-project
+
+And that will create the "~/my-project/mk" directory with a few ".mk" files in
+it. That will enable the use of "dotmk" in that project and you can proceed
+with the Makefile creation in the next section.
+
+
+TASKS
+=====
+
+Building C/C++ Software
+-----------------------
+
+The building process of a software coded in the C/C++ language is usually
+simple. It consists in compiling its source code and linking the resulted
+objects into one binary module, which might be a library or a executable. There
+may be more details in this process, but this is the simplest example.
+
+To build a Makefile without the "dotmk" project you would need to know how to
+define its rules (which are not that simple), call GCC with its compiling
+arguments, linking options and maybe AR. With "dotmk" you need to include the
+following 3 intuitive lines in the Makefile file:
+
+  PROG=foobar
+  SRCS=foo.c bar.c
+  include mk/build.mk
+
+This would instruct GNU make compile the "foo.c" and "bar.c" files and link
+them into the "foobar" executable. The last line just tells make to include
+"dotmk" scripts. After that you just need to execute the following line to
+build it.
+
+  $ make
+
+Very simple, uh?
+
+One of the great things of "dotmk" is that it doesn't only define the building
+targets, but the dependency detection and cleaning ones also. To create the
+".depend" file (please look at "mkdep" manual to understand what it is) you
+need to call:
+
+  $ make dep
+
+And to finally clean all that mess you can call:
+
+  $ make clean
+
+It would clean all the built objects (create with the default "make" command),
+but not the ".depend" file. To clean all the remaining file you would need to
+call:
+
+  $ make distclean
+
+And that's it.
+
+If you need to build a library just change the "PROG" variable name to "LIB":
+
+  LIB=foobar
+  SRCS=foo.c bar.c
+  include mk/build.mk
+
+This would build the "libfoobar.so" and "libfoobar.a" binaries, but without
+version definition. We intent to implement soon that too.
+
+If you need to build more than one executable or library, use "PROGS" or "LIBS"
+and prefix every "SRCS" line with the name of the program (or library) followed
+by a underline. For example:
+
+  PROGS=foobar qwerty
+  foobar_SRCS=foo.c bar.c
+  qwerty_SRCS=qwe.c rty.c
+  include mk/build.mk
+
+If you need to build the "foobar" and "qwerty" programs AND the "asdfgh" and
+"zxcvbn" libraries:
+
+  PROGS=foobar qwerty
+  LIBS=asdfgh zxcvbn
+  foobar_SRCS=foo.c bar.c
+  qwerty_SRCS=qwe.c rty.c
+  asdfgh_SRCS=asd.c fgh.c
+  zxcvbn_SRCS=zxc.c vbn.c
+  include mk/build.mk
+
+And if you need to include library dependency, use the "LIBDIRS" and "DEPLIBS"
+variables:
+
+  PROGS=foobar
+  foobar_SRCS=foo.c bar.c
+  foobar_LIBDIRS=/usr/local/lib
+  foobar_DEPLIBS=asdfgh
+  include mk/build.mk
+
+You could think that this is beginning to be complicated but, believe me, with
+only GNU make the Makefile would be *MUCH* more complicated.
+
+
+Recursive Calling in Subdirectories
+-----------------------------------
+
+If you have a project with lots of programs or libraries to be compiled, maybe
+a good way to organize them would be dividing it into subdirectories. For
+example, if you have the "foo" program and the "bar" library, you could create
+a project tree as:
+
+  .
+  |-- bar
+  |   |-- Makefile
+  |   `-- main.c
+  |-- foo
+  |   |-- Makefile
+  |   `-- main.c
+  `-- mk
+      |-- build.mk
+      `-- subdir.mk
+
+To simplify the "make" command calls without the need to enter it two or more
+times, you could use "dotmk" by just creating the following Makefile the main
+directory:
+
+  SUBDIRS=bar foo
+  include mk/subdir.mk
+
+This would enable the recursive call for the "all", "clean", "distclean" and
+"install" targets.
