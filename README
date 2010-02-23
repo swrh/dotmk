@@ -121,8 +121,15 @@ variables:
   foobar_DEPLIBS=asdfgh
   include mk/build.mk
 
-You could think that this is beginning to be complicated but, believe me, with
-only GNU make the Makefile would be *MUCH* more complicated.
+For headers dependency (include) there is the "INCDIRS" variable:
+
+  PROG=foo
+  SRCS=main.c
+  INCDIRS=/opt/bar/include
+  include mk/build.mk
+
+You could think that this is beginning to be too complicated but, believe me,
+with only GNU make the Makefile would be *MUCH* more complicated.
 
 
 Recursive Calling in Subdirectories
