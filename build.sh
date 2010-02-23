@@ -92,4 +92,4 @@ cleandir "${MKDIR}"
 build build.mk
 build subdir.mk
 
-[ -f Makefile ] || automakefile
+[ "${1}" != "-m" -o -f Makefile ] || automakefile
