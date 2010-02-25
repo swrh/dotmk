@@ -85,19 +85,13 @@ no not empty null:
 ifdef LIB
 LIBS+=			$(LIB)
 $(LIB)_SRCS+=		$(SRCS)
-# It isn't needed to set the individual variable, as the global will be used
-# later anyway.
-#$(LIB)_DEPLIBS+=	$(DEPLIBS)
+$(LIB)_OBJS+=		$(OBJS)
 endif
 
 ifdef PROG
 PROGS+=			$(PROG)
 $(PROG)_SRCS+=		$(SRCS)
-# It isn't needed to set the individual variables, as the globals will be used
-# later anyway.
-#$(PROG)_INCDIRS+=	$(INCDIRS)
-#$(PROG)_LIBDIRS+=	$(LIBDIRS)
-#$(PROG)_DEPLIBS+=	$(DEPLIBS)
+$(PROG)_OBJS+=		$(OBJS)
 endif
 
 
@@ -110,7 +104,7 @@ define BIN_SRC_template
 
 # Read ".depend" file to append dependencies to each object target.
 ifneq ($(wildcard .depend),)
-	# Using $(MAKE) to read file dependencies is TOO MUCH slow. Please use $(AWK).
+	# Using $(MAKE) to read file dependencies is VEEEEEEEEEEERY slow. Please use $(AWK).
 	#$$(1)_depend=	$$$$(shell OBJ="$$(notdir $$$$(patsubst %.cpp,%.o,$$$$(1)))"; echo -e ".PHONY: $$$$$$$${OBJ}\\n$$$$$$$${OBJ}:\\n\\t@echo $$$$$$$$^\\n" | make -f - -f .depend)
 	# Faster, but less compatible.
 	$$(1)_depend=	$$$$(shell exec $(AWK) -v OBJ=$$(notdir $$(patsubst %.cpp,%.o,$$(1))) '{ if (/^[^ \t]/) obj = 0; if ($$$$$$$$1 == OBJ":") { obj = 1; $$$$$$$$1 = ""; } else if (!obj) next; if (/\\$$$$$$$$/) sub(/\\$$$$$$$$/, " "); else sub(/$$$$$$$$/, "\n"); printf("%s", $$$$$$$$0); }' .depend)
@@ -131,6 +125,7 @@ $$(patsubst %.cpp,%.o,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
 endif
 
 $(1)_OBJS+=		$$(patsubst %.cpp,%.o,$$(1))
+$(1)_CLEANFILES+=	$$(patsubst %.cpp,%.o,$$(1))
 
 CXX_SRCS+=		$$(1)
 
@@ -147,6 +142,7 @@ $$(patsubst %.c,%.o,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
 endif
 
 $(1)_OBJS+=		$$(patsubst %.c,%.o,$$(1))
+$(1)_CLEANFILES+=	$$(patsubst %.c,%.o,$$(1))
 
 C_SRCS+=		$$(1)
 
@@ -189,14 +185,15 @@ ifneq ($$($(1)_SHLIB),n)
 DEFAULT_TARGETS+=	lib$(1).so
 SHLIBS+=		lib$(1).so
 endif
+
 lib$(1).so: $$($(1)_OBJS)
-	$$($(1)_LINK) $$^ $$($(1)_LIBDIRS:%=-L%) $$($(1)_DEPLIBS:%=-l%) $$(LIBDIRS:%=-L%) $$(DEPLIBS:%=-l%) $$($(1)_LDFLAGS) $$(LDLIBS) -o $$@ -shared
+	$$($(1)_LINK) $$^ $$($(1)_LIBDIRS:%=-L%) $$(foreach lib,$$($(1)_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(1)_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@ -shared
 
 $(1): lib$(1).a lib$(1).so
 
 CLEAN_TARGETS+=		$(1)_clean
 $(1)_clean:
-	$(RM) lib$(1).a lib$(1).so $$($(1)_OBJS)
+	$(RM) lib$(1).a lib$(1).so $$($(1)_CLEANFILES)
 endef
 
 $(foreach lib,$(LIBS),$(eval $(call LIB_template,$(lib))))
@@ -211,11 +208,11 @@ endif
 
 DEFAULT_TARGETS+=	$(1)
 $(1): $$($(1)_OBJS)
-	$$($(1)_LINK) $$^ $$($(1)_LIBDIRS:%=-L%) $$($(1)_DEPLIBS:%=-l%) $$(LIBDIRS:%=-L%) $$(DEPLIBS:%=-l%) $$($(1)_LDFLAGS) $$(LDLIBS) -o $$@
+	$$($(1)_LINK) $$^ $$($(1)_LIBDIRS:%=-L%) $$(foreach lib,$$($(1)_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(1)_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 CLEAN_TARGETS+=	$(1)_clean
 $(1)_clean:
-	$(RM) $(1) $$($(1)_OBJS)
+	$(RM) $(1) $$($(1)_CLEANFILES)
 endef
 
 $(foreach prog,$(PROGS),$(eval $(call PROG_template,$(prog))))

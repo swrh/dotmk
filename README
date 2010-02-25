@@ -112,13 +112,21 @@ If you need to build the "foobar" and "qwerty" programs AND the "asdfgh" and
   zxcvbn_SRCS=zxc.c vbn.c
   include mk/build.mk
 
-And if you need to include library dependency, use the "LIBDIRS" and "DEPLIBS"
-variables:
+And if you need to include library dependency, dynamic (.so) or static (.a),
+use the "LIBDIRS" and "DEPLIBS" variables:
 
   PROGS=foobar
   foobar_SRCS=foo.c bar.c
+  # libfftw.so is under /usr/local/lib
   foobar_LIBDIRS=/usr/local/lib
-  foobar_DEPLIBS=asdfgh
+  foobar_DEPLIBS=fftw /opt/gtest/lib/libgtest.a ../lame.a
+  include mk/build.mk
+
+To include already compiled objects in your binary use the OBJS variable:
+
+  PROG=foobar
+  SRCS=main.c
+  OBJS=../closed/source.o
   include mk/build.mk
 
 For headers dependency (include) there is the "INCDIRS" variable:
@@ -141,6 +149,7 @@ example, if you have the "foo" program and the "bar" library, you could create
 a project tree as:
 
   .
+  |-- Makefile
   |-- bar
   |   |-- Makefile
   |   `-- main.c
