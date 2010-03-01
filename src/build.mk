@@ -72,25 +72,25 @@ no not empty null:
 # global variables
 
 ifdef LIB
-LIBS+=			$(LIB)
-$(LIB)_SRCS+=		$(SRCS)
-$(LIB)_OBJS+=		$(OBJS)
+LIBS+=				$(LIB)
+$(notdir $(LIB))_SRCS+=		$(SRCS)
+$(notdir $(LIB))_OBJS+=		$(OBJS)
 endif
 
 ifdef PROG
-PROGS+=			$(PROG)
-$(PROG)_SRCS+=		$(SRCS)
-$(PROG)_OBJS+=		$(OBJS)
+PROGS+=				$(PROG)
+$(notdir $(PROG))_SRCS+=	$(SRCS)
+$(notdir $(PROG))_OBJS+=	$(OBJS)
 endif
 
 
 # binaries
 
 define BIN_template
-$(1)_LINK=		$(CC)
+$(notdir $(1))_LINK=		$(CC)
 
 ifneq ($(OBJDIR),)
-$(1)_OBJPREFIX=		$(OBJDIR)/
+$(notdir $(1))_OBJPREFIX=		$(OBJDIR)/
 endif
 
 define BIN_SRC_template
@@ -105,39 +105,39 @@ endif
 
 ifneq ($$(1),$$(patsubst %.cpp,%.lo,$$(1)))
 
-$(1)_LINK=		$(CXX)
+$(notdir $(1))_LINK=		$(CXX)
 
 ifndef $$(1)_CXXFLAGS
-$$(1)_CXXFLAGS+=	$$($(1)_CXXFLAGS) $$(CXXFLAGS)
+$$(1)_CXXFLAGS+=	$$($(notdir $(1))_CXXFLAGS) $$(CXXFLAGS)
 endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(1)_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
-	[ -d '$(dir $@)' ] || mkdir -pv '$(dir $@)'
-	$(LIBTOOL) --mode=compile $(CXX) $$$$($$(1)_CXXFLAGS) $$($(1)_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
+$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+	[ -d $$$$(dir $$$$@) ] || mkdir -pv $$$$(dir $$$$@)
+	$(LIBTOOL) --mode=compile $(CXX) $$$$($$(1)_CXXFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
-$(1)_OBJS+=		$$($(1)_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1))
-$(1)_CLEANFILES+=	$$($(1)_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1))
+$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1))
+$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1))
 
 CXX_SRCS+=		$$(1)
 
 else
 
 ifndef $$(1)_CFLAGS
-$$(1)_CFLAGS+=		$$($(1)_CFLAGS) $$(CFLAGS)
+$$(1)_CFLAGS+=		$$($(notdir $(1))_CFLAGS) $$(CFLAGS)
 endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(1)_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
 	[ -d '$(dir $@)' ] || mkdir -pv '$(dir $@)'
-	$(LIBTOOL) --mode=compile $(CC) $$$$($$(1)_CFLAGS) $$($(1)_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
+	$(LIBTOOL) --mode=compile $(CC) $$$$($$(1)_CFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
-$(1)_OBJS+=		$$($(1)_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1))
-$(1)_CLEANFILES+=	$$($(1)_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1))
+$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1))
+$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1))
 
 C_SRCS+=		$$(1)
 
@@ -147,10 +147,10 @@ _$$(1)=			x
 
 endef
 
-$$(foreach src,$$($(1)_SRCS),$$(eval $$(call BIN_SRC_template,$$(src))))
+$$(foreach src,$$($(notdir $(1))_SRCS),$$(eval $$(call BIN_SRC_template,$$(src))))
 
-MKDEPARGS+=		$$($(1)_INCDIRS:%=-I%)
-CTAGSARGS+=		$$($(1)_INCDIRS)
+MKDEPARGS+=		$$($(notdir $(1))_INCDIRS:%=-I%)
+CTAGSARGS+=		$$($(notdir $(1))_INCDIRS)
 
 endef
 
@@ -163,36 +163,37 @@ CTAGSARGS+=		$(INCDIRS)
 
 define LIB_template
 ifeq ($$(dir $(1)),./)
-$(1)_LIBFILE:=		lib$$(notdir $(1)).la
+$(notdir $(1))_LIBFILE:=		lib$$(notdir $(1)).la
 else
-$(1)_LIBFILE:=		$$(dir $(1))lib$$(notdir $(1)).la
+$(notdir $(1))_LIBFILE:=		$$(dir $(1))lib$$(notdir $(1)).la
 endif
 
-ifeq ($$($(1)_INSTDIR),)
-$(1)_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/lib)
+ifeq ($$($(notdir $(1))_INSTDIR),)
+$(notdir $(1))_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/lib)
 endif
 
-ifeq ($$(subst -rpath,,$$($(1)_LDFLAGS) $$(LDFLAGS)),$$($(1)_LDFLAGS) $$(LDFLAGS))
-$(1)_LDFLAGS+=		-rpath $$($(1)_INSTDIR)
+ifeq ($$(subst -rpath,,$$($(notdir $(1))_LDFLAGS) $$(LDFLAGS)),$$($(notdir $(1))_LDFLAGS) $$(LDFLAGS))
+$(notdir $(1))_LDFLAGS+=		-rpath $$($(notdir $(1))_INSTDIR)
 endif
 
-DEFAULT_TARGETS+=	$$($(1)_LIBFILE)
-$$($(1)_LIBFILE): $$($(1)_OBJS)
-	$(LIBTOOL) --mode=link $$($(1)_LINK) $$^ $$($(1)_LIBDIRS:%=-L%) $$(foreach lib,$$($(1)_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(1)_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+DEFAULT_TARGETS+=	$$($(notdir $(1))_LIBFILE)
+$$($(notdir $(1))_LIBFILE): $$($(notdir $(1))_OBJS)
+	[ -d $$(dir $$@) ] || mkdir -pv $$(dir $$@)
+	$(LIBTOOL) --mode=link $$($(notdir $(1))_LINK) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
-$(1): $$($(1)_LIBFILE)
+$(1): $$($(notdir $(1))_LIBFILE)
 
-CLEAN_TARGETS+=		$(1)_clean
-$(1)_clean:
-	$(LIBTOOL) --mode=clean $(RM) $$($(1)_LIBFILE) $$($(1)_CLEANFILES)
+CLEAN_TARGETS+=		$(notdir $(1))_clean
+$(notdir $(1))_clean:
+	$(LIBTOOL) --mode=clean $(RM) $$($(notdir $(1))_LIBFILE) $$($(notdir $(1))_CLEANFILES)
 
-INSTALL_TARGETS+=	$(1)_install
-$(1)_install:
-	$(LIBTOOL) --mode=install $(INSTALL) -c -D $$($(1)_LIBFILE) $$($(1)_INSTDIR)/$$(notdir $$($(1)_LIBFILE))
+INSTALL_TARGETS+=	$(notdir $(1))_install
+$(notdir $(1))_install: $$($(notdir $(1))_LIBFILE)
+	$(LIBTOOL) --mode=install $(INSTALL) -c -D $$($(notdir $(1))_LIBFILE) $$($(notdir $(1))_INSTDIR)/$$(notdir $$($(notdir $(1))_LIBFILE))
 
-UNINSTALL_TARGETS+=	$(1)_uninstall
-$(1)_uninstall:
-	$(LIBTOOL) --mode=uninstall $(RM) $$($(1)_INSTDIR)/$$(notdir $$($(1)_LIBFILE))
+UNINSTALL_TARGETS+=	$(notdir $(1))_uninstall
+$(notdir $(1))_uninstall:
+	$(LIBTOOL) --mode=uninstall $(RM) $$($(notdir $(1))_INSTDIR)/$$(notdir $$($(notdir $(1))_LIBFILE))
 endef
 
 $(foreach lib,$(LIBS),$(eval $(call LIB_template,$(lib))))
@@ -201,25 +202,26 @@ $(foreach lib,$(LIBS),$(eval $(call LIB_template,$(lib))))
 # programs
 
 define PROG_template
-ifeq ($$($(1)_INSTDIR),)
-$(1)_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/lib)
+ifeq ($$($(notdir $(1))_INSTDIR),)
+$(notdir $(1))_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/lib)
 endif
 
 DEFAULT_TARGETS+=	$(1)
-$(1): $$($(1)_OBJS)
-	$(LIBTOOL) --mode=link $$($(1)_LINK) $$^ $$($(1)_LIBDIRS:%=-L%) $$(foreach lib,$$($(1)_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(1)_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+$(1): $$($(notdir $(1))_OBJS)
+	[ -d $$(dir $$@) ] || mkdir -pv $$(dir $$@)
+	$(LIBTOOL) --mode=link $$($(notdir $(1))_LINK) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
-CLEAN_TARGETS+=	$(1)_clean
-$(1)_clean:
-	$(LIBTOOL) --mode=clean $(RM) $(1) $$($(1)_CLEANFILES)
+CLEAN_TARGETS+=	$(notdir $(1))_clean
+$(notdir $(1))_clean:
+	$(LIBTOOL) --mode=clean $(RM) $(1) $$($(notdir $(1))_CLEANFILES)
 
-INSTALL_TARGETS+=	$(1)_install
-$(1)_install:
-	$(LIBTOOL) --mode=install $(INSTALL) -c -D $(1) $$($(1)_INSTDIR)/$$(notdir $(1))
+INSTALL_TARGETS+=	$(notdir $(1))_install
+$(notdir $(1))_install:
+	$(LIBTOOL) --mode=install $(INSTALL) -c -D $(1) $$($(notdir $(1))_INSTDIR)/$$(notdir $(1))
 
-UNINSTALL_TARGETS+=	$(1)_uninstall
-$(1)_uninstall:
-	$(LIBTOOL) --mode=uninstall $(RM) $$($(1)_INSTDIR)/$$(notdir $(1))
+UNINSTALL_TARGETS+=	$(notdir $(1))_uninstall
+$(notdir $(1))_uninstall:
+	$(LIBTOOL) --mode=uninstall $(RM) $$($(notdir $(1))_INSTDIR)/$$(notdir $(1))
 endef
 
 $(foreach prog,$(PROGS),$(eval $(call PROG_template,$(prog))))
@@ -238,13 +240,20 @@ MKDEPARGS+=		$(CXX_SRCS) $(C_SRCS)
 dep:
 	$(MKDEP) $(MKDEPARGS)
 
-DISTCLEAN_TARGETS+=	$(CLEAN_TARGETS) dep_distclean
+DISTCLEAN_TARGETS+=	$(CLEAN_TARGETS)
+
+DISTCLEAN_TARGETS+=	dep_distclean
 .PHONY: dep_distclean
 dep_distclean:
 	$(RM) .depend
 
+ifdef DISTCLEANFILES
+DISTCLEAN_TARGETS+=	files_distclean
+.PHONY: files_distclean
+files_distclean:
+	$(RM) -r $(DISTCLEANFILES)
+endif
+
 .PHONY: tags
 tags:
 	$(CTAGS) -R $(CTAGSARGS) $(C_SRCS) $(CXX_SRCS)
-
--include .depend
