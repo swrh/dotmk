@@ -147,6 +147,14 @@ _$$(1)=			x
 
 endef
 
+ifndef $(1)_SRCS
+ifneq ($(wildcard $(1).cpp),)
+$(1)_SRCS=		$(1).cpp
+else
+$(1)_SRCS=		$(1).c
+endif
+endif
+
 $$(foreach src,$$($(notdir $(1))_SRCS),$$(eval $$(call BIN_SRC_template,$$(src))))
 
 MKDEPARGS+=		$$($(notdir $(1))_INCDIRS:%=-I%)
