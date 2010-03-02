@@ -211,7 +211,7 @@ $(foreach lib,$(LIBS),$(eval $(call LIB_template,$(lib))))
 
 define PROG_template
 ifeq ($$($(notdir $(1))_INSTDIR),)
-$(notdir $(1))_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/lib)
+$(notdir $(1))_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/bin)
 endif
 
 DEFAULT_TARGETS+=	$(1)
