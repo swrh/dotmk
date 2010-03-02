@@ -228,7 +228,7 @@ $(notdir $(1))_clean:
 	$(LIBTOOL) --mode=clean $(RM) $(1) $$($(notdir $(1))_CLEANFILES)
 
 INSTALL_TARGETS+=	$(notdir $(1))_install
-$(notdir $(1))_install:
+$(notdir $(1))_install: $(1)
 	$(LIBTOOL) --mode=install $(INSTALL) -c -D $(1) $$($(notdir $(1))_INSTDIR)/$$(notdir $(1))
 
 UNINSTALL_TARGETS+=	$(notdir $(1))_uninstall
