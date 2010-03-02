@@ -147,11 +147,15 @@ _$$(1)=			x
 
 endef
 
-ifndef $(1)_SRCS
+ifndef $$(1)_SRCS
 ifneq ($(wildcard $(1).cpp),)
 $(1)_SRCS=		$(1).cpp
-else
+else ifneq ($(wildcard $(1).c),)
 $(1)_SRCS=		$(1).c
+else ifneq ($(wildcard main.cpp),)
+$(1)_SRCS=		main.cpp
+else ifneq ($(wildcard main.c),)
+$(1)_SRCS=		main.c
 endif
 endif
 
