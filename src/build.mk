@@ -114,7 +114,7 @@ endif
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
 $$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
-	[ -d $$$$(dir $$$$@) ] || mkdir -pv $$$$(dir $$$$@)
+	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -pv $$$$(dir $$$$@)'; mkdir -pv $$$$(dir $$$$@); }
 	$(LIBTOOL) --mode=compile $(CXX) $$$$($$(1)_CXXFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
@@ -190,7 +190,7 @@ endif
 
 DEFAULT_TARGETS+=	$$($(notdir $(1))_LIBFILE)
 $$($(notdir $(1))_LIBFILE): $$($(notdir $(1))_OBJS)
-	[ -d $$(dir $$@) ] || mkdir -pv $$(dir $$@)
+	@[ -d $$(dir $$@) ] || { echo 'mkdir -pv $$(dir $$@)'; mkdir -pv $$(dir $$@); }
 	$(LIBTOOL) --mode=link $$($(notdir $(1))_LINK) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 $(1): $$($(notdir $(1))_LIBFILE)
