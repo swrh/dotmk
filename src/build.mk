@@ -93,6 +93,8 @@ ifneq ($(OBJDIR),)
 $(notdir $(1))_OBJPREFIX=		$(OBJDIR)/
 endif
 
+MKDEPARGS+=		$$($(notdir $(1))_CXXFLAGS)
+
 define BIN_SRC_template
 
 # Read ".depend" file to append dependencies to each object target.
@@ -106,6 +108,8 @@ endif
 ifneq ($$(1),$$(patsubst %.cpp,%.lo,$$(1)))
 
 $(notdir $(1))_LINK=		$(CXX)
+
+MKDEPARGS+=		$$($$(1)_CXXFLAGS)
 
 ifndef $$(1)_CXXFLAGS
 $$(1)_CXXFLAGS+=	$$($(notdir $(1))_CXXFLAGS) $$(CXXFLAGS)
