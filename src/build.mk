@@ -151,7 +151,7 @@ _$$(1)=			x
 
 endef
 
-ifndef $$(1)_SRCS
+ifndef $(1)_SRCS
 ifneq ($(wildcard $(1).cpp),)
 $(1)_SRCS=		$(1).cpp
 else ifneq ($(wildcard $(1).c),)
