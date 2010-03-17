@@ -73,14 +73,22 @@ no not empty null:
 
 ifdef LIB
 LIBS+=				$(LIB)
+ifdef SRCS
 $(notdir $(LIB))_SRCS+=		$(SRCS)
+endif
+ifdef OBJS
 $(notdir $(LIB))_OBJS+=		$(OBJS)
+endif
 endif
 
 ifdef PROG
 PROGS+=				$(PROG)
+ifdef SRCS
 $(notdir $(PROG))_SRCS+=	$(SRCS)
+endif
+ifdef OBJS
 $(notdir $(PROG))_OBJS+=	$(OBJS)
+endif
 endif
 
 
