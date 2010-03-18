@@ -1,0 +1,5 @@
+mk
+.libs
+*.lo
+*.o
+foo
