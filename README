@@ -171,6 +171,25 @@ This would enable the recursive call for the "all", "clean", "distclean" and
 "install" targets.
 
 
+Global definitions
+------------------
+
+There are situations where you need to set a variable for every Makefile that
+is called. For these times you need to create a local "mk" file. The name of
+the file must be the base name of the "mk" file you want to precede, suffixed
+by the "-local.mk" name and created in the same directory where that "mk" file
+is.
+
+For example, if you need to set the PREFIX variable to install all files of
+your project in a different directory, do it in the "build-local.mk" file under
+the same directory where the original "build.mk" file is:
+
+  $ echo PREFIX=/opt/foobar >> mk/build-local.mk
+
+And then every "make install" command called will install the built files under
+the "/opt/foobar" directory.
+
+
 Cross Compiling
 ---------------
 
@@ -184,3 +203,9 @@ variable. Example:
 
 This would compile the "eptime" for ARM processor using arm-linux-gnu-gcc and
 arm-linux-gnu-g++ as the compilers and arm-linux-gnu-g++ as the linker.
+
+If you have a whole project which needs to be cross compiled, you can define
+that variable in the local "mk" file called "build-local.mk". For that just go
+to the directory where "dotmk" was installed and run:
+
+  $ echo CROSS_COMPILE=arm-linux-gnu- >> mk/build-local.mk

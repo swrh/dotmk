@@ -21,6 +21,13 @@ ${mkfile}=		y
 
 EOF
 	cat "${SRCDIR}/default-head.mk"
+	cat << EOF
+
+ifneq (\$(wildcard \$(DOTMKDIR)/${mkfile%.*}-local.mk),)
+	include \$(DOTMKDIR)/${mkfile%.*}-local.mk
+endif
+
+EOF
 	echo
 	cat "${SRCDIR}/${mkfile}"
 	echo
