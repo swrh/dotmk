@@ -43,12 +43,12 @@ endif
 ARFLAGS=		rcs
 
 # Commands.
-AR=			ar
+AR=			$(CROSS_COMPILE)ar
 AWK=			awk
-CC=			gcc
+CC=			$(CROSS_COMPILE)gcc
 CP=			cp
 CTAGS=			ctags
-CXX=			g++
+CXX=			$(CROSS_COMPILE)g++
 INSTALL=		install
 LIBTOOL=		libtool
 MKDEP=			mkdep
@@ -61,8 +61,8 @@ WGET=			wget
 # Directories.
 PREFIX=			/usr/local
 
-LINK.o=			$(LIBTOOL) $(CC)
-LINK.lo=		$(LIBTOOL) $(CC)
+LINK.o=			$(LIBTOOL) --tag=CC --mode=link $(CC)
+LINK.lo=		$(LIBTOOL) --tag=CC --mode=link $(CC)
 
 # Empty goals.
 .PHONY: no not empty null
@@ -95,13 +95,14 @@ endif
 # binaries
 
 define BIN_template
-$(notdir $(1))_LINK=		$(CC)
+$(notdir $(1))_LINKER=		$(CC)
+$(notdir $(1))_LT_TAG=		CC
 
 ifneq ($(OBJDIR),)
-$(notdir $(1))_OBJPREFIX=		$(OBJDIR)/
+$(notdir $(1))_OBJPREFIX=	$(OBJDIR)/
 endif
 
-MKDEPARGS+=		$$($(notdir $(1))_CXXFLAGS)
+MKDEPARGS+=			$$($(notdir $(1))_CXXFLAGS)
 
 define BIN_SRC_template
 
@@ -115,7 +116,8 @@ endif
 
 ifneq ($$(1),$$(patsubst %.cpp,%.lo,$$(1)))
 
-$(notdir $(1))_LINK=		$(CXX)
+$(notdir $(1))_LINKER=		$(CXX)
+$(notdir $(1))_LT_TAG=		CXX
 
 MKDEPARGS+=		$$($$(1)_CXXFLAGS)
 
@@ -127,7 +129,7 @@ endif
 ifneq ($$$$(_$$(1)),x)
 $$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
 	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -pv $$$$(dir $$$$@)'; mkdir -pv $$$$(dir $$$$@); }
-	$(LIBTOOL) --mode=compile $(CXX) $$$$($$(1)_CXXFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
+	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $$$$($$(1)_CXXFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
 $(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1))
@@ -145,7 +147,7 @@ endif
 ifneq ($$$$(_$$(1)),x)
 $$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
 	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -pv $$$$(dir $$$$@)'; mkdir -pv $$$$(dir $$$$@); }
-	$(LIBTOOL) --mode=compile $(CC) $$$$($$(1)_CFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
+	$(LIBTOOL) --tag=CC --mode=compile $(CC) $$$$($$(1)_CFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
 $(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1))
@@ -203,7 +205,7 @@ endif
 DEFAULT_TARGETS+=	$$($(notdir $(1))_LIBFILE)
 $$($(notdir $(1))_LIBFILE): $$($(notdir $(1))_OBJS)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -pv $$(dir $$@)'; mkdir -pv $$(dir $$@); }
-	$(LIBTOOL) --mode=link $$($(notdir $(1))_LINK) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+	$(LIBTOOL) --tag=$$($(notdir $(1))_LT_TAG) --mode=link $$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 $(1): $$($(notdir $(1))_LIBFILE)
 
@@ -233,7 +235,7 @@ endif
 DEFAULT_TARGETS+=	$(1)
 $(1): $$($(notdir $(1))_OBJS)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -pv $$(dir $$@)'; mkdir -pv $$(dir $$@); }
-	$(LIBTOOL) --mode=link $$($(notdir $(1))_LINK) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+	$(LIBTOOL) --tag=$$($(notdir $(1))_LT_TAG) --mode=link $$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 CLEAN_TARGETS+=	$(notdir $(1))_clean
 $(notdir $(1))_clean:
