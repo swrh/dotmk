@@ -46,17 +46,12 @@ ARFLAGS=		rcs
 AR=			$(CROSS_COMPILE)ar
 AWK=			awk
 CC=			$(CROSS_COMPILE)gcc
-CP=			cp
 CTAGS=			ctags
 CXX=			$(CROSS_COMPILE)g++
 INSTALL=		install
 LIBTOOL=		libtool
 MKDEP=			mkdep
-MKDIR=			mkdir
 RM=			rm -f
-TEST=			test
-TOUCH=			touch
-WGET=			wget
 
 # Directories.
 PREFIX=			/usr/local
