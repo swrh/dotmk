@@ -169,3 +169,18 @@ directory:
 
 This would enable the recursive call for the "all", "clean", "distclean" and
 "install" targets.
+
+
+Cross Compiling
+---------------
+
+The cross compiling procedure is pretty simple: just set the CROSS_COMPILE
+variable. Example:
+
+  CROSS_COMPILE=arm-linux-gnu-
+  PROG=foo
+  SRCS=main.cpp foo.c bar.c FooBar.cpp
+  include ../mk/build.mk
+
+This would compile the "eptime" for ARM processor using arm-linux-gnu-gcc and
+arm-linux-gnu-g++ as the compilers and arm-linux-gnu-g++ as the linker.
