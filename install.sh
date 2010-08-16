@@ -37,7 +37,8 @@ EOF
 endif # ndef ${mkfile}
 EOF
 
-	exec 1>&9-
+	exec 1>&9
+	exec 9>&-
 }
 
 MKDIR="mk"
