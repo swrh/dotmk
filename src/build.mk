@@ -86,6 +86,10 @@ $(notdir $(PROG))_OBJS+=	$(OBJS)
 endif
 endif
 
+ifdef DISABLE_TARGET
+DISABLE_TARGETS+=		$(DISABLE_TARGET)
+endif
+
 
 # binaries
 

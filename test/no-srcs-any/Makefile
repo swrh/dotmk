@@ -1,5 +1,7 @@
 PROG=foo
 
+DISABLE_TARGET=install
+
 include ../mk/build.mk
 
 .IGNORE: $(PROG)
