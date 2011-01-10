@@ -198,7 +198,7 @@ $(notdir $(1))_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/lib)
 endif
 
 ifeq ($$(subst -rpath,,$$($(notdir $(1))_LDFLAGS) $$(LDFLAGS)),$$($(notdir $(1))_LDFLAGS) $$(LDFLAGS))
-$(notdir $(1))_LDFLAGS+=		-rpath $$($(notdir $(1))_INSTDIR)
+$(notdir $(1))_LDFLAGS+=		-Wl,-rpath,$$($(notdir $(1))_INSTDIR)
 endif
 
 DEFAULT_TARGETS+=	$$($(notdir $(1))_LIBFILE)
