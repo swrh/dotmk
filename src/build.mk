@@ -49,15 +49,13 @@ CC=			$(CROSS_COMPILE)gcc
 CTAGS=			ctags
 CXX=			$(CROSS_COMPILE)g++
 INSTALL=		install
-LIBTOOL=		libtool
 MKDEP=			mkdep
 RM=			rm -f
 
 # Directories.
 PREFIX=			/usr/local
 
-LINK.o=			$(LIBTOOL) --tag=CC --mode=link $(CC)
-LINK.lo=		$(LIBTOOL) --tag=CC --mode=link $(CC)
+LINK.o=			$(CC)
 
 # Empty goals.
 .PHONY: no not empty null
@@ -95,7 +93,6 @@ endif
 
 define BIN_template
 $(notdir $(1))_LINKER=		$(CC)
-$(notdir $(1))_LT_TAG=		CC
 
 ifneq ($(OBJDIR),)
 $(notdir $(1))_OBJPREFIX=	$(OBJDIR)/
@@ -113,10 +110,9 @@ ifneq ($(wildcard .depend),)
 	$$(1)_depend=	$$$$(shell exec $(AWK) -v OBJ=$$(notdir $$(patsubst %.cpp,%.o,$$(1))) '{ if (/^[^ \t]/) obj = 0; if ($$$$$$$$1 == OBJ":") { obj = 1; $$$$$$$$1 = ""; } else if (!obj) next; if (/\\$$$$$$$$/) sub(/\\$$$$$$$$/, " "); else sub(/$$$$$$$$/, "\n"); printf("%s", $$$$$$$$0); }' .depend)
 endif
 
-ifneq ($$(1),$$(patsubst %.cpp,%.lo,$$(1)))
+ifneq ($$(1),$$(patsubst %.cpp,%.o,$$(1)))
 
 $(notdir $(1))_LINKER=		$(CXX)
-$(notdir $(1))_LT_TAG=		CXX
 
 MKDEPARGS+=		$$($$(1)_CXXFLAGS)
 
@@ -126,13 +122,13 @@ endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.o,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
 	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -pv $$$$(dir $$$$@)'; mkdir -pv $$$$(dir $$$$@); }
-	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) $$$$($$(1)_CXXFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
+	$(CXX) $$$$($$(1)_CXXFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
-$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1))
-$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.lo,$$(1))
+$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.o,$$(1))
+$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.o,$$(1))
 
 CXX_SRCS+=		$$(1)
 
@@ -144,13 +140,13 @@ endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.o,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
 	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -pv $$$$(dir $$$$@)'; mkdir -pv $$$$(dir $$$$@); }
-	$(LIBTOOL) --tag=CC --mode=compile $(CC) $$$$($$(1)_CFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
+	$(CC) $$$$($$(1)_CFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
-$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1))
-$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.lo,$$(1))
+$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.o,$$(1))
+$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.o,$$(1))
 
 C_SRCS+=		$$(1)
 
@@ -188,9 +184,9 @@ CTAGSARGS+=		$(INCDIRS)
 
 define LIB_template
 ifeq ($$(dir $(1)),./)
-$(notdir $(1))_LIBFILE:=		lib$$(notdir $(1)).la
+$(notdir $(1))_LIBFILE:=		lib$$(notdir $(1)).so
 else
-$(notdir $(1))_LIBFILE:=		$$(dir $(1))lib$$(notdir $(1)).la
+$(notdir $(1))_LIBFILE:=		$$(dir $(1))lib$$(notdir $(1)).so
 endif
 
 ifeq ($$($(notdir $(1))_INSTDIR),)
@@ -204,21 +200,21 @@ endif
 DEFAULT_TARGETS+=	$$($(notdir $(1))_LIBFILE)
 $$($(notdir $(1))_LIBFILE): $$($(notdir $(1))_OBJS)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -pv $$(dir $$@)'; mkdir -pv $$(dir $$@); }
-	$(LIBTOOL) --tag=$$($(notdir $(1))_LT_TAG) --mode=link $$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+	$$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) -shared $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 $(1): $$($(notdir $(1))_LIBFILE)
 
 CLEAN_TARGETS+=		$(notdir $(1))_clean
 $(notdir $(1))_clean:
-	$(LIBTOOL) --mode=clean $(RM) $$($(notdir $(1))_LIBFILE) $$($(notdir $(1))_CLEANFILES)
+	$(RM) $$($(notdir $(1))_LIBFILE) $$($(notdir $(1))_CLEANFILES)
 
 INSTALL_TARGETS+=	$(notdir $(1))_install
 $(notdir $(1))_install: $$($(notdir $(1))_LIBFILE)
-	$(LIBTOOL) --mode=install $(INSTALL) -c -D $$($(notdir $(1))_LIBFILE) $$($(notdir $(1))_INSTDIR)/$$(notdir $$($(notdir $(1))_LIBFILE))
+	$(INSTALL) -c -D $$($(notdir $(1))_LIBFILE) $$($(notdir $(1))_INSTDIR)/$$(notdir $$($(notdir $(1))_LIBFILE))
 
 UNINSTALL_TARGETS+=	$(notdir $(1))_uninstall
 $(notdir $(1))_uninstall:
-	$(LIBTOOL) --mode=uninstall $(RM) $$($(notdir $(1))_INSTDIR)/$$(notdir $$($(notdir $(1))_LIBFILE))
+	$(RM) $$($(notdir $(1))_INSTDIR)/$$(notdir $$($(notdir $(1))_LIBFILE))
 endef
 
 $(foreach lib,$(LIBS),$(eval $(call LIB_template,$(lib))))
@@ -234,19 +230,19 @@ endif
 DEFAULT_TARGETS+=	$(1)
 $(1): $$($(notdir $(1))_OBJS)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -pv $$(dir $$@)'; mkdir -pv $$(dir $$@); }
-	$(LIBTOOL) --tag=$$($(notdir $(1))_LT_TAG) --mode=link $$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+	$$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 CLEAN_TARGETS+=	$(notdir $(1))_clean
 $(notdir $(1))_clean:
-	$(LIBTOOL) --mode=clean $(RM) $(1) $$($(notdir $(1))_CLEANFILES)
+	$(RM) $(1) $$($(notdir $(1))_CLEANFILES)
 
 INSTALL_TARGETS+=	$(notdir $(1))_install
 $(notdir $(1))_install: $(1)
-	$(LIBTOOL) --mode=install $(INSTALL) -c -D $(1) $$($(notdir $(1))_INSTDIR)/$$(notdir $(1))
+	$(INSTALL) -c -D $(1) $$($(notdir $(1))_INSTDIR)/$$(notdir $(1))
 
 UNINSTALL_TARGETS+=	$(notdir $(1))_uninstall
 $(notdir $(1))_uninstall:
-	$(LIBTOOL) --mode=uninstall $(RM) $$($(notdir $(1))_INSTDIR)/$$(notdir $(1))
+	$(RM) $$($(notdir $(1))_INSTDIR)/$$(notdir $(1))
 endef
 
 $(foreach prog,$(PROGS),$(eval $(call PROG_template,$(prog))))
