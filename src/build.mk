@@ -16,6 +16,19 @@ else
 	dotmk_DEBUG=n
 endif
 
+# General functions.
+
+# function: append_with_colon
+# description: append a string to a variable separating them by a colon
+# parameter 1: name of the variable to be edited
+# parameter 2: string to append to the variable
+define append_with_colon
+	ifneq ($$($(1)),)
+		$(1):=	$$($(1)):
+	endif
+	$(1):=		$$($(1))$(2)
+endef
+
 # C compiler.
 CFLAGS+=		-Wall -Wunused
 ifeq ($(dotmk_DEBUG),y)
@@ -30,6 +43,22 @@ ifeq ($(dotmk_DEBUG),y)
 CXXFLAGS+=		-O0 -ggdb3 -DDEBUG
 else
 CXXFLAGS+=		-O2 -DNDEBUG
+endif
+
+# pkg-config - C/C++ compiler
+# Substitute every whitespace on "PKG_CONFIG_PATH" with colons.
+pkgconfig_path:=
+$(foreach dir,$(PKG_CONFIG_PATH),$(eval $(call append_with_colon,pkgconfig_path,$(dir))))
+PKG_CONFIG_PATH:=	$(pkgconfig_path)
+
+ifneq ($(DEPPKGCONFIG),)
+# Use `:=' (simply expanded variables) to assign "pkg-config" settings to avoid
+# multiple unnecessary execution.
+pkgconfig_cflags:=	$(shell PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)" pkg-config --cflags $(DEPPKGCONFIG))
+CFLAGS+=		$(pkgconfig_cflags)
+CXXFLAGS+=		$(pkgconfig_cflags)
+pkgconfig_ldflags:=	$(shell PKG_CONFIG_PATH="$(PKG_CONFIG_PATH)" pkg-config --libs $(DEPPKGCONFIG))
+LDFLAGS+=		$(pkgconfig_ldflags)
 endif
 
 # Linker.
@@ -65,40 +94,50 @@ no not empty null:
 # global variables
 
 ifdef LIB
-LIBS+=				$(LIB)
+LIBS+=			$(LIB)
 ifdef SRCS
-$(notdir $(LIB))_SRCS+=		$(SRCS)
+$(notdir $(LIB))_SRCS+=	$(SRCS)
 endif
 ifdef OBJS
-$(notdir $(LIB))_OBJS+=		$(OBJS)
+$(notdir $(LIB))_OBJS+=	$(OBJS)
 endif
 endif
 
 ifdef PROG
-PROGS+=				$(PROG)
+PROGS+=			$(PROG)
 ifdef SRCS
-$(notdir $(PROG))_SRCS+=	$(SRCS)
+$(notdir $(PROG))_SRCS+=$(SRCS)
 endif
 ifdef OBJS
-$(notdir $(PROG))_OBJS+=	$(OBJS)
+$(notdir $(PROG))_OBJS+=$(OBJS)
 endif
 endif
 
 ifdef DISABLE_TARGET
-DISABLE_TARGETS+=		$(DISABLE_TARGET)
+DISABLE_TARGETS+=	$(DISABLE_TARGET)
 endif
 
 
 # binaries
 
 define BIN_template
-$(notdir $(1))_LINKER=		$(CC)
+$(notdir $(1))_LINKER=	$(CC)
 
 ifneq ($(OBJDIR),)
-$(notdir $(1))_OBJPREFIX=	$(OBJDIR)/
+$(notdir $(1))_OBJPREFIX=$(OBJDIR)/
 endif
 
-MKDEPARGS+=			$$($(notdir $(1))_CXXFLAGS)
+ifneq ($($(notdir $(1))_DEPPKGCONFIG),)
+# Use `:=' (simply expanded variables) to assign "pkg-config" settings to avoid
+# multiple unnecessary execution.
+$(notdir $(1))_pkgconfig_cflags:=	$$(shell PKG_CONFIG_PATH="$$(PKG_CONFIG_PATH)" pkg-config --cflags $($(notdir $(1))_DEPPKGCONFIG))
+$(notdir $(1))_CFLAGS+=	$$($(notdir $(1))_pkgconfig_cflags)
+$(notdir $(1))_CXXFLAGS+=	$$($(notdir $(1))_pkgconfig_cflags)
+$(notdir $(1))_pkgconfig_ldflags:=	$$(shell PKG_CONFIG_PATH="$$(PKG_CONFIG_PATH)" pkg-config --libs $($(notdir $(1))_DEPPKGCONFIG))
+$(notdir $(1))_LDFLAGS+=	$$($(notdir $(1))_pkgconfig_ldflags)
+endif
+
+MKDEPARGS+=		$$($(notdir $(1))_CXXFLAGS)
 
 define BIN_SRC_template
 
@@ -112,7 +151,7 @@ endif
 
 ifneq ($$(1),$$(patsubst %.cpp,%.o,$$(1)))
 
-$(notdir $(1))_LINKER=		$(CXX)
+$(notdir $(1))_LINKER=	$(CXX)
 
 MKDEPARGS+=		$$($$(1)_CXXFLAGS)
 
@@ -133,6 +172,8 @@ $(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.o,$$
 CXX_SRCS+=		$$(1)
 
 else
+
+MKDEPARGS+=		$$($$(1)_CFLAGS)
 
 ifndef $$(1)_CFLAGS
 $$(1)_CFLAGS+=		$$($(notdir $(1))_CFLAGS) $$(CFLAGS)

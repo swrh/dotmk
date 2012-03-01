@@ -122,7 +122,24 @@ use the "LIBDIRS" and "DEPLIBS" variables:
   foobar_DEPLIBS=fftw /opt/gtest/lib/libgtest.a ../lame.a
   include mk/build.mk
 
-To include already compiled objects in your binary use the OBJS variable:
+If your software depends on other softwares that uses "pkg-config" description
+files (.pc), you just need to use the "DEPPKGCONFIG" variable:
+
+  PROGS=foo qux
+  foo_SRCS=bar.c
+  foo_DEPPKGCONFIG=xinerama
+  qux_SRCS=main.c
+  qux_DEPPKGCONFIG=x11
+
+And that would use the headers and libraries of "Xinerama" and "X11" when
+building the "foo" and "qux" programs respectively. If you wish to pass a
+"pkg-config" argument while getting CFLAGS and LIBS settings, just pass it
+along with the packages in the same DEPPKGCONFIG variable. Don't forget to set
+the "PKG_CONFIG_PATH" variable (make or environment) if the ".pc" files
+aren't located in the default search path.
+
+To include already compiled objects in your binary you should use the OBJS
+variable:
 
   PROG=foobar
   SRCS=main.c

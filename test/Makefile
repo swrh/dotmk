@@ -19,6 +19,7 @@ SUBDIRS=		\
 			no-srcs-main \
 			no-srcs \
 			no-srcs-any \
+			pkg-config \
 
 .PHONY: distclean_mk
 distclean_mk:
