@@ -20,6 +20,7 @@ SUBDIRS=		\
 			no-srcs \
 			no-srcs-any \
 			pkg-config \
+			overloading \
 
 .PHONY: distclean_mk
 distclean_mk:

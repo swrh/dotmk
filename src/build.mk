@@ -82,7 +82,7 @@ MKDEP=			mkdep
 RM=			rm -f
 
 # Directories.
-PREFIX=			/usr/local
+PREFIX?=		/usr/local
 
 LINK.o=			$(CC)
 
