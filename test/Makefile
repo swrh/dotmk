@@ -21,6 +21,7 @@ SUBDIRS=		\
 			no-srcs-any \
 			pkg-config \
 			overloading \
+			relative-objdir \
 
 .PHONY: distclean_mk
 distclean_mk:

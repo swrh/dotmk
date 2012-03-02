@@ -161,13 +161,13 @@ endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.o,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
-	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -pv $$$$(dir $$$$@)'; mkdir -pv $$$$(dir $$$$@); }
+$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.cpp,%.o,$$(1))): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -p $$$$(dir $$$$@)'; mkdir -p $$$$(dir $$$$@); }
 	$(CXX) $$$$($$(1)_CXXFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
-$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.o,$$(1))
-$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.cpp,%.o,$$(1))
+$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.cpp,%.o,$$(1)))
+$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.cpp,%.o,$$(1)))
 
 CXX_SRCS+=		$$(1)
 
@@ -181,13 +181,13 @@ endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.o,$$(1)): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
-	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -pv $$$$(dir $$$$@)'; mkdir -pv $$$$(dir $$$$@); }
+$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.c,%.o,$$(1))): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -p $$$$(dir $$$$@)'; mkdir -p $$$$(dir $$$$@); }
 	$(CC) $$$$($$(1)_CFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
 
-$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.o,$$(1))
-$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(patsubst %.c,%.o,$$(1))
+$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.c,%.o,$$(1)))
+$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.c,%.o,$$(1)))
 
 C_SRCS+=		$$(1)
 
@@ -240,7 +240,7 @@ endif
 
 DEFAULT_TARGETS+=	$$($(notdir $(1))_LIBFILE)
 $$($(notdir $(1))_LIBFILE): $$($(notdir $(1))_OBJS)
-	@[ -d $$(dir $$@) ] || { echo 'mkdir -pv $$(dir $$@)'; mkdir -pv $$(dir $$@); }
+	@[ -d $$(dir $$@) ] || { echo 'mkdir -p $$(dir $$@)'; mkdir -p $$(dir $$@); }
 	$$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) -shared $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 $(1): $$($(notdir $(1))_LIBFILE)
@@ -270,7 +270,7 @@ endif
 
 DEFAULT_TARGETS+=	$(1)
 $(1): $$($(notdir $(1))_OBJS)
-	@[ -d $$(dir $$@) ] || { echo 'mkdir -pv $$(dir $$@)'; mkdir -pv $$(dir $$@); }
+	@[ -d $$(dir $$@) ] || { echo 'mkdir -p $$(dir $$@)'; mkdir -p $$(dir $$@); }
 	$$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 CLEAN_TARGETS+=	$(notdir $(1))_clean
