@@ -1,5 +1,14 @@
 #!/bin/sh -e
 
+copy()
+{
+	file="$1"
+
+	echo "copying \`${MKDIR}/${file}' file..."
+
+	cat "${TOPDIR}/${file}" > "${MKDIR}/${file}"
+}
+
 build()
 {
 	mkfile="$1"
@@ -51,6 +60,9 @@ if [ $# -eq 1 ]; then
 fi
 
 mkdir -p "${MKDIR}"
+
+copy LICENSE
+copy README
 
 build build.mk
 build subdir.mk
