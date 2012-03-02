@@ -3,3 +3,4 @@ mk
 *.lo
 *.o
 foo
+*.so
