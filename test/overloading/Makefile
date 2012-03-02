@@ -1,13 +1,10 @@
-# Makefile
-
 PROG=foo
 
 PREFIX=.
 
-all: test
+include ../mk/build.mk
 
+all: test
 test:
 	$(MAKE) install
 	[ -f ./bin/foo ]
-
-include ../mk/build.mk
