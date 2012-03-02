@@ -1,5 +1,3 @@
-# Makefile
-
 PKG_CONFIG_PATH=$(CURDIR) $(CURDIR)/pkgconfig $(CURDIR)
 
 PROGS=foo
