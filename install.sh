@@ -67,5 +67,6 @@ copy VERSION
 
 build build.mk
 build subdir.mk
+build qmake.mk
 
 echo "dotmk is now installed under the \`${MKDIR}' directory."

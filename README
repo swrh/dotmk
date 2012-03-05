@@ -157,6 +157,28 @@ You could think that this is beginning to be too complicated but, believe me,
 with only GNU make the Makefile would be *MUCH* more complicated.
 
 
+Qt/Qmake Support
+----------------
+
+If you have a Qt application that is already built with "qmake" and you wish to
+include it in your project that uses "dotmk" I'd say that it is possible. You
+just need to define your ".pro" file with the "PRO" variable and include the
+"mk/qmake.mk" script:
+
+  PRO=foo.pro
+  include mk/qmake.mk
+
+This would make the "dotmk" call the "qmake" utility whenever needed to build
+the "foo" software. You can also define the "QMAKE" variable to call "qmake" by
+a different command, for example:
+
+  QMAKE=qmake-qt3
+  PRO=foo.pro
+  include mk/qmake.mk
+
+With that setting "dotmk" would use the Qt3 version of "qmake" in a Debian-like
+GNU/Linux distribution.
+
 Recursive Calling in Subdirectories
 -----------------------------------
 

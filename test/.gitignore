@@ -4,3 +4,4 @@ mk
 *.o
 foo
 *.so
+*.pro
