@@ -23,6 +23,7 @@ SUBDIRS=		\
 			overloading \
 			relative-objdir \
 			qmake-pro \
+			assembly \
 
 .PHONY: distclean_mk
 distclean_mk:

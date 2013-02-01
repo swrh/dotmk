@@ -171,6 +171,26 @@ $(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst
 
 CXX_SRCS+=		$$(1)
 
+else ifneq ($$(1),$$(patsubst %.S,%.o,$$(1)))
+
+MKDEPARGS+=		$$($$(1)_CFLAGS)
+
+ifndef $$(1)_CFLAGS
+$$(1)_CFLAGS+=		$$($(notdir $(1))_CFLAGS) $$(CFLAGS)
+endif
+
+# avoid defining a target more than one time
+ifneq ($$$$(_$$(1)),x)
+$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.S,%.o,$$(1))): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -p $$$$(dir $$$$@)'; mkdir -p $$$$(dir $$$$@); }
+	$(CC) $$$$($$(1)_CFLAGS) $$($(notdir $(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
+endif
+
+$(notdir $(1))_OBJS+=		$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.S,%.o,$$(1)))
+$(notdir $(1))_CLEANFILES+=	$$($(notdir $(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.S,%.o,$$(1)))
+
+S_SRCS+=		$$(1)
+
 else
 
 MKDEPARGS+=		$$($$(1)_CFLAGS)
@@ -202,10 +222,14 @@ ifneq ($(wildcard $(1).cpp),)
 $(1)_SRCS=		$(1).cpp
 else ifneq ($(wildcard $(1).c),)
 $(1)_SRCS=		$(1).c
+else ifneq ($(wildcard $(1).S),)
+$(1)_SRCS=		$(1).S
 else ifneq ($(wildcard main.cpp),)
 $(1)_SRCS=		main.cpp
 else ifneq ($(wildcard main.c),)
 $(1)_SRCS=		main.c
+else ifneq ($(wildcard main.S),)
+$(1)_SRCS=		main.S
 endif
 endif
 
