@@ -79,6 +79,7 @@ CTAGS=			ctags
 CXX=			$(CROSS_COMPILE)g++
 INSTALL=		install
 MKDEP=			mkdep
+RANLIB=			$(CROSS_COMPILE)ranlib
 RM=			rm -f
 
 # Directories.
@@ -248,10 +249,21 @@ CTAGSARGS+=		$(INCDIRS)
 # libraries
 
 define LIB_template
-ifeq ($$(dir $(1)),./)
-$(notdir $(1))_LIBFILE:=		lib$$(notdir $(1)).so
+ifneq ($(1),$$(patsubst %.so,%,$(1)))
+$(notdir $(1))_LIBTYPE:=				so
+$(notdir $(1))_LIBBASE:=				$$(patsubst %.so,%,$(notdir $(1)))
+else ifneq ($(1),$$(patsubst %.a,%,$(1)))
+$(notdir $(1))_LIBTYPE:=				a
+$(notdir $(1))_LIBBASE:=				$$(patsubst %.a,%,$(notdir $(1)))
 else
-$(notdir $(1))_LIBFILE:=		$$(dir $(1))lib$$(notdir $(1)).so
+$(notdir $(1))_LIBTYPE:=				so
+$(notdir $(1))_LIBBASE:=				$(notdir $(1))
+endif
+
+ifeq ($$(dir $(1)),./)
+$(notdir $(1))_LIBFILE:=		lib$$($(notdir $(1))_LIBBASE).$$($(notdir $(1))_LIBTYPE)
+else
+$(notdir $(1))_LIBFILE:=		$$(dir $(1))lib$$($(notdir $(1))_LIBBASE).$$($(notdir $(1))_LIBTYPE)
 endif
 
 ifeq ($$($(notdir $(1))_INSTDIR),)
@@ -263,9 +275,16 @@ $(notdir $(1))_LDFLAGS+=		-Wl,-rpath,$$($(notdir $(1))_INSTDIR)
 endif
 
 DEFAULT_TARGETS+=	$$($(notdir $(1))_LIBFILE)
+ifeq ($$($(notdir $(1))_LIBTYPE),a)
+$$($(notdir $(1))_LIBFILE): $$($(notdir $(1))_OBJS)
+	@[ -d $$(dir $$@) ] || { echo 'mkdir -p $$(dir $$@)'; mkdir -p $$(dir $$@); }
+	$(AR) cq $$($(notdir $(1))_LIBFILE) $$^
+	$(RANLIB) $$($(notdir $(1))_LIBFILE)
+else ifeq ($$($(notdir $(1))_LIBTYPE),so)
 $$($(notdir $(1))_LIBFILE): $$($(notdir $(1))_OBJS)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -p $$(dir $$@)'; mkdir -p $$(dir $$@); }
 	$$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) -shared $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+endif
 
 $(1): $$($(notdir $(1))_LIBFILE)
 
