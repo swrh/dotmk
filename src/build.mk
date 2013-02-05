@@ -107,27 +107,39 @@ dotmk_BINNAME=		$(if $(filter p:%,$(1)),$(call dotmk_PROGNAME,$(call dotmk_BINST
 # global variables
 
 ifneq ($(LIB),)
-LIBS+=			$(LIB)
+LIBS+=						$(LIB)
 ifneq ($(SRCS),)
-$(call dotmk_LIBNAME,$(LIB))_SRCS+=	$(SRCS)
+$(call dotmk_LIBNAME,$(LIB))_SRCS+=		$(SRCS)
 endif
 ifneq ($(OBJS),)
-$(call dotmk_LIBNAME,$(LIB))_OBJS+=	$(OBJS)
+$(call dotmk_LIBNAME,$(LIB))_OBJS+=		$(OBJS)
+endif
+ifneq ($(DEPFILES),)
+$(call dotmk_LIBNAME,$(LIB))_DEPFILES+=		$(DEPFILES)
+endif
+ifneq ($(CLEANFILES),)
+$(call dotmk_LIBNAME,$(LIB))_CLEANFILES+=	$(CLEANFILES)
 endif
 endif
 
 ifneq ($(PROG),)
-PROGS+=			$(PROG)
+PROGS+=						$(PROG)
 ifneq ($(SRCS),)
-$(call dotmk_PROGNAME,$(PROG))_SRCS+=	$(SRCS)
+$(call dotmk_PROGNAME,$(PROG))_SRCS+=		$(SRCS)
 endif
 ifneq ($(OBJS),)
-$(call dotmk_PROGNAME,$(PROG))_OBJS+=	$(OBJS)
+$(call dotmk_PROGNAME,$(PROG))_OBJS+=		$(OBJS)
+endif
+ifneq ($(DEPFILES),)
+$(call dotmk_PROGNAME,$(PROG))_DEPFILES+=	$(DEPFILES)
+endif
+ifneq ($(CLEANFILES),)
+$(call dotmk_PROGNAME,$(PROG))_CLEANFILES+=	$(CLEANFILES)
 endif
 endif
 
 ifneq ($(DISABLE_TARGET),)
-DISABLE_TARGETS+=	$(DISABLE_TARGET)
+DISABLE_TARGETS+=				$(DISABLE_TARGET)
 endif
 
 
@@ -174,7 +186,7 @@ endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(call dotmk_BINNAME,$(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.cpp,%.o,$$(1))): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+$$($(call dotmk_BINNAME,$(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.cpp,%.o,$$(1))): $$(1) $$$$($$(1)_DEPFILES) $$$$($$(1)_depend)
 	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -p $$$$(dir $$$$@)'; mkdir -p $$$$(dir $$$$@); }
 	$(CXX) $$$$($$(1)_CXXFLAGS) $$($(call dotmk_BINNAME,$(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
@@ -194,7 +206,7 @@ endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(call dotmk_BINNAME,$(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.S,%.o,$$(1))): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+$$($(call dotmk_BINNAME,$(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.S,%.o,$$(1))): $$(1) $$$$($$(1)_DEPFILES) $$$$($$(1)_depend)
 	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -p $$$$(dir $$$$@)'; mkdir -p $$$$(dir $$$$@); }
 	$(CC) $$$$($$(1)_CFLAGS) $$($(call dotmk_BINNAME,$(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
@@ -214,7 +226,7 @@ endif
 
 # avoid defining a target more than one time
 ifneq ($$$$(_$$(1)),x)
-$$($(call dotmk_BINNAME,$(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.c,%.o,$$(1))): $$(1) $$$$($$(1)_DEPS) $$$$($$(1)_depend)
+$$($(call dotmk_BINNAME,$(1))_OBJPREFIX)$$(subst /,_,$$(patsubst %.c,%.o,$$(1))): $$(1) $$$$($$(1)_DEPFILES) $$$$($$(1)_depend)
 	@[ -d $$$$(dir $$$$@) ] || { echo 'mkdir -p $$$$(dir $$$$@)'; mkdir -p $$$$(dir $$$$@); }
 	$(CC) $$$$($$(1)_CFLAGS) $$($(call dotmk_BINNAME,$(1))_INCDIRS:%=-I%) $$(INCDIRS:%=-I%) -c -o $$$$@ $$$$<
 endif
@@ -272,13 +284,13 @@ endif
 
 DEFAULT_TARGETS+=	$(call dotmk_LIBFILE,$(1))
 ifeq ($(call dotmk_LIBTYPE,$(1)),a)
-$(call dotmk_LIBFILE,$(1)): $$($(call dotmk_LIBNAME,$(1))_OBJS)
+$(call dotmk_LIBFILE,$(1)): $$($(call dotmk_LIBNAME,$(1))_OBJS) $$($(call dotmk_LIBNAME,$(1))_DEPFILES)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -p $$(dir $$@)'; mkdir -p $$(dir $$@); }
-	$(AR) $(ARFLAGS) $(call dotmk_LIBFILE,$(1)) $$^
+	$(AR) $(ARFLAGS) $(call dotmk_LIBFILE,$(1)) $$($(call dotmk_LIBNAME,$(1))_OBJS)
 else
-$(call dotmk_LIBFILE,$(1)): $$($(call dotmk_LIBNAME,$(1))_OBJS)
+$(call dotmk_LIBFILE,$(1)): $$($(call dotmk_LIBNAME,$(1))_OBJS) $$($(call dotmk_LIBNAME,$(1))_DEPFILES)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -p $$(dir $$@)'; mkdir -p $$(dir $$@); }
-	$$($(call dotmk_LIBNAME,$(1))_LINKER) $$^ $$($(call dotmk_LIBNAME,$(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(call dotmk_LIBNAME,$(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) -shared $$($(call dotmk_LIBNAME,$(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+	$$($(call dotmk_LIBNAME,$(1))_LINKER) $$($(call dotmk_LIBNAME,$(1))_OBJS) $$($(call dotmk_LIBNAME,$(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(call dotmk_LIBNAME,$(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) -shared $$($(call dotmk_LIBNAME,$(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 endif
 
 $(call dotmk_LIBNAME,$(1)): $(call dotmk_LIBFILE,$(1))
@@ -307,9 +319,9 @@ $(notdir $(1))_INSTDIR=		$(if $(INSTDIR),$(INSTDIR),$(PREFIX)/bin)
 endif
 
 DEFAULT_TARGETS+=	$(1)
-$(1): $$($(notdir $(1))_OBJS)
+$(1): $$($(notdir $(1))_OBJS) $$($(notdir $(1))_DEPFILES)
 	@[ -d $$(dir $$@) ] || { echo 'mkdir -p $$(dir $$@)'; mkdir -p $$(dir $$@); }
-	$$($(notdir $(1))_LINKER) $$^ $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
+	$$($(notdir $(1))_LINKER) $$($(notdir $(1))_OBJS) $$($(notdir $(1))_LIBDIRS:%=-L%) $$(foreach lib,$$($(notdir $(1))_DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$($(notdir $(1))_LDFLAGS) $$(LIBDIRS:%=-L%) $$(foreach lib,$$(DEPLIBS),$$(if $$(wildcard $$(lib)),$$(lib),-l$$(lib))) $$(LDFLAGS) $$(LDLIBS) -o $$@
 
 CLEAN_TARGETS+=	$(notdir $(1))_clean
 $(notdir $(1))_clean:
@@ -348,9 +360,9 @@ dep_distclean:
 	$(RM) .depend
 
 ifneq ($(DISTCLEANFILES),)
-DISTCLEAN_TARGETS+=	files_distclean
-.PHONY: files_distclean
-files_distclean:
+DISTCLEAN_TARGETS+=	dotmk_distclean
+.PHONY: dotmk_distclean
+dotmk_distclean:
 	$(RM) -r $(DISTCLEANFILES)
 endif
 
