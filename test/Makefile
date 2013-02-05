@@ -24,6 +24,7 @@ SUBDIRS=		\
 			relative-objdir \
 			qmake-pro \
 			assembly \
+			library-objs-base \
 
 .PHONY: distclean_mk
 distclean_mk:
