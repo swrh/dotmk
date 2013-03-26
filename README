@@ -248,3 +248,23 @@ that variable in the local "mk" file called "build-local.mk". For that just go
 to the directory where "dotmk" was installed and run:
 
   $ echo CROSS_COMPILE=arm-linux-gnu- >> mk/build-local.mk
+
+
+Debug Instructions
+------------------
+
+The debug mode is disabled if the DEBUG variable isn't defined, empty, defined
+as `n', `N', `no' or `NO'. In any other cases (defined as `y', `yes' or even
+`x') the debug mode is enabled and some special `gcc' arguments will be passed.
+These arguments are:
+
+  * -O0: disable optimization -- make debugging produce the expected results;
+  * -ggdb3: produce debugging information for use by GDB;
+  * -DDEBUG: a macro to determine that the code is being compiled in debug
+    mode;
+
+When not in debug mode, the arguments are:
+
+  * -O2: optimize "even more" -- perform nearly all supported optimizations;
+  * -DNDEBUG: a macro to determine that the code is NOT being compiled in debug
+    mode;
