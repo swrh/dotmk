@@ -25,6 +25,7 @@ SUBDIRS=		\
 			qmake-pro \
 			assembly \
 			library-objs-base \
+			prog-equal-deplib \
 
 .PHONY: distclean_mk
 distclean_mk:
