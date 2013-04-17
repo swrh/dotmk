@@ -179,6 +179,7 @@ a different command, for example:
 With that setting "dotmk" would use the Qt3 version of "qmake" in a Debian-like
 GNU/Linux distribution.
 
+
 Recursive Calling in Subdirectories
 -----------------------------------
 
