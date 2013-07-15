@@ -60,6 +60,7 @@ if [ $# -eq 1 ]; then
 fi
 
 mkdir -p "${MKDIR}"
+mkdir -p "${MKDIR}/mk.d"
 
 copy LICENSE
 copy README

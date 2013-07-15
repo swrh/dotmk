@@ -11,3 +11,5 @@ ifndef DOTMKDIR
 	endif
 
 endif
+
+include $(wildcard $(DOTMKDIR)/mk.d/*.mk)
