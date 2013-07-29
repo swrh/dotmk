@@ -1,5 +1,5 @@
 ifndef DOTMKDIR
-	DOTMKDIR=		$(dir $(lastword $(MAKEFILE_LIST)))
+	DOTMKDIR:=		$(dir $(lastword $(MAKEFILE_LIST)))
 
 	dotmk_tmp:=		$(shell [ ! -d $(DOTMKDIR) ] || echo $(DOTMKDIR))
 	ifeq ($(dotmk_tmp),)
