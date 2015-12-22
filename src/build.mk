@@ -98,7 +98,7 @@ dotmk_PROGNAME=		$(notdir $(1))
 
 dotmk_LIBNAME=		$(notdir $(if $(filter %.so,$(1)),$(patsubst %.so,%,$(1)),$(patsubst %.a,%,$(1))))
 dotmk_LIBTYPE=		$(if $(filter %.a,$(1)),a,so)
-dotmk_LIBFILE=		$(if $(filter ./%,$(dir $(1))),,$(dir $(1)))lib$(call dotmk_LIBNAME,$(1)).$(call dotmk_LIBTYPE,$(1))
+dotmk_LIBFILE=		$(patsubst ./%,%,$(dir $(1)))lib$(call dotmk_LIBNAME,$(1)).$(call dotmk_LIBTYPE,$(1))
 
 dotmk_BINSTR=		$(if $(filter p:%,$(1)),$(patsubst p:%,%,$(1)),$(patsubst l:%,%,$(1)))
 dotmk_BINNAME=		$(if $(filter p:%,$(1)),$(call dotmk_PROGNAME,$(call dotmk_BINSTR,$(1))),$(call dotmk_LIBNAME,$(call dotmk_BINSTR,$(1))))
