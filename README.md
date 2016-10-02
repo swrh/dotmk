@@ -1,3 +1,12 @@
+ATTENTION
+=========
+
+This tool is outdated and I recommend you to try CMake. It's been years since I
+created it and CMake does everything "dotmk" does and is much more
+sophisticated.
+
+If you really want to try "dotmk" please use it at your own risk.
+
 INTRODUCTION
 ============
 
