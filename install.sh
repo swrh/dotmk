@@ -63,7 +63,7 @@ mkdir -p "${MKDIR}"
 mkdir -p "${MKDIR}/mk.d"
 
 copy LICENSE
-copy README
+copy README.md
 copy VERSION
 
 build build.mk
